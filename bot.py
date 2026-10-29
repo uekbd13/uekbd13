@@ -13,7 +13,7 @@ MY_EMAIL = "almqlz5854@gmail.com"
 MY_PHONE = "0509334095"
 TARGET_FRIEND = "em_ad311"
 BOT_TOKEN = "9098011021:AAFrQh6ShkwI3ZSMjyAXVwSncOBNjpKtIRg"
-"
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
