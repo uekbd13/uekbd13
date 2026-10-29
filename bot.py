@@ -27,12 +27,18 @@ async def process_streak(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_msg = await update.message.reply_text(f"⏳ جاري محاولة إرسال طلب استعادة الستريك للصديق `{TARGET_FRIEND}`...", parse_mode='Markdown')
 
     try:
-        # إعداد المتصفح ليتوافق مع سيرفر Render المجاني
+          # إعداد المتصفح ليتوافق مع جهازك
         options = uc.ChromeOptions()
-        options.add_argument('--headless=new')  # التشغيل في الخلفية بدون واجهة رسومية
+        options.add_argument('--headless=new')  # التشغيل في الخلفية
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--disable-gpu')
+        
+        # تحديد مسار متصفح كروم في الويندوز
+        options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+        
+        # تشغيل المتصفح بالمسار المحدد
+        driver = uc.Chrome(options=options, browser_executable_path=r"C:\Program Files\Google\Chrome\Application\chrome.exe")
 
         # جلب مسار متصفح كروم من متغيرات البيئة التي أضفتها في Render
         chrome_bin = os.environ.get("CHROME_BIN", "/usr/bin/google-chrome")
