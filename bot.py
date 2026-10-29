@@ -1,26 +1,4 @@
-import os
-import time
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import undetected_chromedriver as uc 
-
-MY_USERNAME = "edk-9"
-MY_EMAIL = "almqlz5854@gmail.com"
-MY_PHONE = "0509334095"
-TARGET_FRIEND = "em_ad311"
-BOT_TOKEN = "9098011021:AAFrQh6ShkwI3ZSMjyAXVwSncOBNjpKtIRg"
-
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🤖 أهلاً بك! البوت جاهز الآن.\n\n"
-        "فقط أرسل الأمر:\n`/streak`\n\n"
-        "وسيقوم بإرسال الطلب تلقائياً!",
-        parse_mode='Markdown'
+_mode='Markdown'
     )
 
 async def process_streak(update: Update, context: ContextTypes.DEFAULT_TYPE):
