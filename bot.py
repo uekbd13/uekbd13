@@ -28,11 +28,19 @@ def get_chrome_path_from_registry():
         except:
             return r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 
+def human_type(element, text):
+    """ دالة ذكية تكتب النص حرفاً بحرف وبسرعات متفاوتة لتبدو كإنسان وتتجنب كشف الكابتشا """
+    element.click()
+    element.clear()
+    for char in text:
+        element.send_keys(char)
+        time.sleep(random.uniform(0.1, 0.3)) # تأخير عشوائي بين الحروف
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("👋 أهلاً بك! استخدم الأمر /streak لبدء استعادة الستريك تلقائياً.")
 
 async def process_streak(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    status_msg = await update.message.reply_text(f"⏳ جاري فتح صفحة الدعم والوصول للنموذج تلقائياً للصديق `{TARGET_FRIEND}`...", parse_mode='Markdown')
+    status_msg = await update.message.reply_text(f"⏳ جاري فتح المتصفح ومحاكاة الكتابة البشرية لتفادي الحماية للبلد `{TARGET_FRIEND}`...", parse_mode='Markdown')
     
     driver = None
     try:
@@ -48,23 +56,15 @@ async def process_streak(update: Update, context: ContextTypes.DEFAULT_TYPE):
         driver = uc.Chrome(options=options, browser_executable_path=chrome_path)
         driver.maximize_window()
 
-        # فتح الرابط الأساسي
-        url = "https://help.snapchat.com/hc/ar/requests/new?co=true&ticket_form_id=149423"
+        url = "https://snapchat.com"
         driver.get(url)
         
-        wait = WebDriverWait(driver, 25)
+        wait = WebDriverWait(driver, 30)
         
-        # خطوة ذكية: فحص ما إذا كان الموقع قام بالتحويل ويحتاج إلى ضغط زر "فقدت الستريك" لإظهار الحقول
-        try:
-            # البحث عن خيار "فقدت الستريك" أو "I lost my Snapstreak" وضغطه تلقائياً إذا ظهرت الصفحة العامة
-            streak_option = wait.until(EC.element_to_be_clickable((By.XPATH, "//label[contains(., 'ستريك') or contains(., 'Snapstreak')] | //input[@value='streak']")))
-            streak_option.click()
-            time.sleep(3)
-        except:
-            # إذا فتحت صفحة الحقول مباشرة سيتخطى الخطوة السابقة ويكمل التعبئة
-            pass
+        # الانتظار حتى يستقر الموقع تماماً
+        time.sleep(6)
 
-        # الانتقال لداخل الـ iframe الخاص بالنموذج إن وُجد
+        # التحويل التلقائي لداخل الإطار (iframe) الخاص بالنموذج
         if len(driver.find_elements(By.TAG_NAME, "iframe")) > 0:
             try:
                 iframe = wait.until(EC.presence_of_element_located((By.XPATH, "//iframe[contains(@src, 'ticket') or contains(@id, 'ticket')]")))
@@ -73,44 +73,42 @@ async def process_streak(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 try: driver.switch_to.frame(0)
                 except: pass
 
-        # تعبئة الحقول المصححة
-        username_field = wait.until(EC.presence_of_element_located((By.XPATH, "//input[contains(@id, 'username') or contains(@name, 'username') or @type='text']")))
-        username_field.clear()
-        username_field.send_keys(MY_USERNAME)
+        # 1. تعبئة حقل "اسم المستخدم" بمحاكاة بشرية
+        username_field = wait.until(EC.presence_of_element_located((By.XPATH, "//*[@id='username' or @name='username' or contains(@aria-label, 'المستخدم') or contains(@placeholder, 'حساب سناب')]")))
+        human_type(username_field, MY_USERNAME)
+        time.sleep(1)
 
-        email_field = wait.until(EC.presence_of_element_located((By.XPATH, "//input[contains(@type, 'email') or contains(@id, 'email')]")))
-        email_field.clear()
-        email_field.send_keys(MY_EMAIL)
+        # 2. تعبئة حقل "البريد الإلكتروني" بمحاكاة بشرية
+        email_field = wait.until(EC.presence_of_element_located((By.XPATH, "//*[@id='email' or @type='email' or contains(@aria-label, 'البريد') or contains(@name, 'email')]")))
+        human_type(email_field, MY_EMAIL)
+        time.sleep(1)
 
-        phone_field = wait.until(EC.presence_of_element_located((By.XPATH, "//input[contains(@type, 'tel') or contains(@id, 'phone')]")))
-        phone_field.clear()
-        phone_field.send_keys(MY_PHONE)
+        # 3. تعبئة حقل "رقم الجوّال" بمحاكاة بشرية
+        phone_field = wait.until(EC.presence_of_element_located((By.XPATH, "//*[@id='phone' or @type='tel' or contains(@aria-label, 'الجوال') or contains(@name, 'phone')]")))
+        human_type(phone_field, MY_PHONE)
+        time.sleep(1)
 
-        friend_field = wait.until(EC.presence_of_element_located((By.XPATH, "(//input[contains(@id, 'friend') or contains(@name, 'friend') or @type='text'])[last()]")))
-        friend_field.clear()
-        friend_field.send_keys(TARGET_FRIEND)
-
+        # 4. تعبئة حقل "اسم مستخدم الصديق" بمحاكاة بشرية
+        try:
+            friend_field = wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(@id, 'friend') or contains(@name, 'friend') or contains(@aria-label, 'صديق')]")))
+        except:
+            friend_field = driver.find_elements(By.XPATH, "//input[@type='text']")[-1]
+            
+        human_type(friend_field, TARGET_FRIEND)
         time.sleep(2)
 
-        # الضغط على زر الإرسال
-        submit_btn = wait.until(EC.element_to_be_clickable((By.XPATH, "//input[@type='submit'] | //button[@type='submit'] | //button[contains(text(), 'إرسال')]")))
-        submit_btn.click()
-        
-        time.sleep(6)
-        await status_msg.edit_text(f"✅ تم إرسال طلب الستريك للصديق `{TARGET_FRIEND}` بنجاح تام!", parse_mode='Markdown')
+        # 🛠️ تم إزالة الضغط التلقائي على زر الإرسال وإغلاق المتصفح لكي لا يتم حظرك من الـ reCAPTCHA
+        await status_msg.edit_text(f"👋 تم تجهيز وكتابة البيانات في المتصفح بنجاح! تفضل بحل الكابتشا (إن ظهرت) واضغط إرسال في شاشتك يدوياً الآن.", parse_mode='Markdown')
 
     except Exception as e:
         await status_msg.edit_text(f"❌ حدث خطأ أثناء التعبئة التلقائية.\nالتفاصيل: `{str(e)[:120]}`", parse_mode='Markdown')
-    finally:
         if driver is not None:
-            try:
-                driver.quit()
-            except:
-                pass
+            try: driver.quit()
+            except: pass
 
 if __name__ == '__main__':
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("streak", process_streak))
-    print("🤖 البوت يعمل ومستعد للتجربة الآن...")
+    print("🤖 البوت يعمل ومستعد للتجربة اليدوية الآمنة...")
     app.run_polling()
