@@ -49,7 +49,7 @@ async def process_streak(update: Update, context: ContextTypes.DEFAULT_TYPE):
         driver.maximize_window()
 
         # التوجه المباشر لرابط نموذج طلب استعادة الستريك الظاهر في صورتك
-        url = "https://help.snapchat.com/hc/ar/requests/new?ticket_form_id=227393"
+        url = "https://help.snapchat.com/hc/ar/requests/new?co=true&ticket_form_id=149423"
         driver.get(url)
         
         wait = WebDriverWait(driver, 30)
