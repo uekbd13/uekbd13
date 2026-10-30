@@ -28,10 +28,10 @@ def get_chrome_path_from_registry():
             return r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("👋 أهلاً بك! استخدم الأمر /streak لبدء استعادة الستريك تلقائياً.")
+    await update.message.reply_text("👋 أهلاً بك! استخدم الأمر /streak لبدء تعبئة نموذج الستريك تلقائياً.")
 
 async def process_streak(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    status_msg = await update.message.reply_text(f"⏳ جاري تعبئة طلب الستريك للصديق `{TARGET_FRIEND}` الحقول ظهرت في المتصفح...", parse_mode='Markdown')
+    status_msg = await update.message.reply_text(f"⏳ جاري فتح نموذج الستريك وتعبئة البيانات للصديق `{TARGET_FRIEND}`...", parse_mode='Markdown')
     
     driver = None
     try:
@@ -48,16 +48,16 @@ async def process_streak(update: Update, context: ContextTypes.DEFAULT_TYPE):
         driver = uc.Chrome(options=options)
         driver.maximize_window()
 
-        # تم تعديل الرابط ليوجه مباشرة لصفحة الدعم الخاصة بسناب شات (أو صفحة استعادة الستريك)
-        url = "https://support.snapchat.com/a/lost-streak"
+        # التوجه المباشر لرابط نموذج طلب استعادة الستريك الظاهر في صورتك
+        url = "https://help.snapchat.com/hc/ar/requests/new?ticket_form_id=227393"
         driver.get(url)
         
         wait = WebDriverWait(driver, 30)
         
-        # الانتظار حتى استقرار الصفحة تماماً
+        # الانتظار حتى تحميل الصفحة والحقول تماماً
         time.sleep(5)
 
-        # التحويل التلقائي لداخل الإطار (iframe) الخاص بالنموذج إذا كان معزولاً
+        # التحويل التلقائي لداخل الإطار (iframe) إن وجد بالصفحة
         if len(driver.find_elements(By.TAG_NAME, "iframe")) > 0:
             try:
                 iframe = wait.until(EC.presence_of_element_located((By.XPATH, "//iframe[contains(@src, 'ticket') or contains(@id, 'ticket')]")))
