@@ -15,6 +15,19 @@ MY_EMAIL = "almqlz5854@gmail.com"
 MY_PHONE = "0509334095"
 TARGET_FRIEND = "em_ad311"
 
+def find_chrome_path():
+    """ دالة ذكية للبحث التلقائي عن مسار كروم في الويندوز لتجنب خطأ عدم العثور عليه """
+    possible_paths = [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe"),
+        r"C:\Program Files\Google\Chrome SxS\Application\chrome.exe" # Chrome Canary
+    ]
+    for path in possible_paths:
+        if os.path.exists(path):
+            return path
+    return None
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("👋 أهلاً بك! استخدم الأمر /streak لبدء استعادة الستريك تلقائياً.")
 
@@ -32,9 +45,13 @@ async def process_streak(update: Update, context: ContextTypes.DEFAULT_TYPE):
         current_os = platform.system().lower()
         
         if "windows" in current_os:
-            chrome_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
-            options.binary_location = chrome_path
-            driver = uc.Chrome(options=options, browser_executable_path=chrome_path)
+            chrome_path = find_chrome_path()
+            if chrome_path:
+                options.binary_location = chrome_path
+                driver = uc.Chrome(options=options, browser_executable_path=chrome_path)
+            else:
+                # إذا لم يجد مسار كروم العادي، يحاول التشغيل بدون تحديد المسار كخيار أخير
+                driver = uc.Chrome(options=options)
         else:
             chrome_bin = os.environ.get("CHROME_BIN", "/usr/bin/google-chrome")
             options.binary_location = chrome_bin
